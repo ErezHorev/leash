@@ -8,6 +8,7 @@ import (
 
 func TestSimpleTextParse(t *testing.T) {
 	fmt.Println(findMatch("[workaround for #123]"))
+	fmt.Println(findMatch("[workaound for #123]"))
 	fmt.Println(findMatch("abababab[workaround for #123333333333]zxzxzxzxzxzxz"))
 	fmt.Println(findMatch("            [workaround for #1]/t/t"))
 }
