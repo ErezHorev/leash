@@ -1,16 +1,15 @@
 package workarounder
 
 import (
-	"fmt"
 	"os"
 	"testing"
 )
 
-func TestSimpleTextParse(t *testing.T) {
-	fmt.Println(findMatch("[workaround for #123]"))
-	fmt.Println(findMatch("[workaound for #123]"))
-	fmt.Println(findMatch("abababab[workaround for #123333333333]zxzxzxzxzxzxz"))
-	fmt.Println(findMatch("            [workaround for #1]/t/t"))
+func TestSimpleFindMatch(t *testing.T) {
+	t.Log(findMatch("[workaround for #123]"))
+	t.Log(findMatch("[workaound for #123]"))
+	t.Log(findMatch("abababab[workaround for #123333333333]zxzxzxzxzxzxz"))
+	t.Log(findMatch("            [workaround for #1]/t/t"))
 }
 
 func TestParseFiles(t *testing.T) {

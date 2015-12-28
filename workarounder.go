@@ -4,9 +4,12 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
+
+	"github.com/olekukonko/tablewriter"
 )
 
 var re = regexp.MustCompile(`\[workaround for #[0-9]+\]`)
@@ -40,31 +43,49 @@ func makeFileList(path string) (fileList []string, err error) {
 	return fileList, err
 }
 
-func searchFiles(fileList []string) error {
+func findMatchInFiles(fileList []string) (data [][]string, err error) {
 	for _, file := range fileList {
-		fmt.Println("Reading: " + file)
+		// fmt.Println("Reading: " + file)
 
 		fh, err := os.Open(file)
 		f := bufio.NewReader(fh)
 		if err != nil {
-			return errors.New("Failed opening file")
+			return data, errors.New("Failed opening file")
 		}
 
 		buf := make([]byte, 1024)
 		for {
 			buf, _, err = f.ReadLine()
-			if err != nil {
+			if err == io.EOF {
 				break
-				// t.Fatal("Failed reading file")
 			}
 
-			if re.MatchString(string(buf)) {
-				fmt.Printf("%v\n", findMatch(string(buf)))
+			if err != nil {
+				fmt.Printf("Failed reading file: %v\n, err: %v\n\n\n", file, err)
+				break
+			}
+
+			results := findMatch(string(buf))
+			for _, matches := range results {
+				for _, match := range matches {
+					// fmt.Printf("%v   (%v)\n", match, file)
+					data = append(data, []string{match, file})
+				}
 			}
 		}
 		fh.Close()
 	}
-	return nil
+	return data, nil
+}
+
+func printTable(data [][]string) {
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Issue", "File"})
+
+	for _, v := range data {
+		table.Append(v)
+	}
+	table.Render() // Send output
 }
 
 func FindWorkarounds(path string) error {
@@ -72,5 +93,10 @@ func FindWorkarounds(path string) error {
 	if err != nil {
 		return err
 	}
-	return searchFiles(fileList)
+	data, err := findMatchInFiles(fileList)
+	if err != nil {
+		return err
+	}
+	printTable(data)
+	return nil
 }
